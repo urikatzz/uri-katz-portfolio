@@ -1,5 +1,6 @@
 const projects = [
-  { title: 'My Helix Jump', platform: 'ANDROID / WEBGL', image: 'helix.jpg', description: 'My take on Helix Jump. Play in your browser or download the Android version.' },
+  { title: 'Deep Rock Galactic — My Take', platform: 'PC / UNITY', image: 'marching-cubes.png', description: 'A Deep Rock Galactic-inspired mining game using the marching-cubes algorithm to generate underground terrain, dig through caves, and collect gold.' },
+  { title: 'Helix Jump — My Take', platform: 'ANDROID / WEBGL', image: 'helix.jpg', description: 'My take on Helix Jump. Play in your browser or download the Android version.' },
   { title: 'AR Space Battle', platform: 'ANDROID', image: 'space.png', description: 'Fire lasers and missiles at spaceships and planets all around you in augmented reality.' },
   { title: 'The Village', platform: 'WINDOWS', image: 'village.jpg', description: 'A 3D action role-playing game.' },
   { title: 'FoxFox', platform: 'ANDROID', image: 'foxfox.jpg', description: 'Collect cherries and diamonds, avoid enemies, and chase a high score. Features Google Play leaderboards and achievements.' },

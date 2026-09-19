@@ -43,10 +43,17 @@ export const games = [
     "category": "PERSONAL GAME"
   },
   {
-    "title": "My Helix Jump",
+    "title": "Helix Jump — My Take",
     "platform": "ANDROID / WEBGL",
     "image": "assets/helix.jpg",
     "description": "My take on Helix Jump. Play in your browser or download the Android version.",
+    "category": "PERSONAL GAME"
+  },
+  {
+    "title": "Deep Rock Galactic — My Take",
+    "platform": "PC / UNITY",
+    "image": "assets/marching-cubes.png",
+    "description": "A Deep Rock Galactic-inspired mining game using the marching-cubes algorithm to generate underground terrain, dig through caves, and collect gold.",
     "category": "PERSONAL GAME"
   },
   {

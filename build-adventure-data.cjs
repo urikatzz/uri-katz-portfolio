@@ -16,6 +16,7 @@ const companies = [...html.matchAll(/<article class="company-project[\s\S]*?<\/a
 const featured = html.match(/<article class="featured">([\s\S]*?)<\/article>/)[1];
 const games = [
   ...companies,
+  {title:'Marching Cube Game', platform:'PC / UNITY', image:'assets/marching-cubes.png', description:'Dig through an infinite cave, explore underground, and search for gold.'},
   {title:'Flocking Simulation', platform:'PC / UNITY ECS', image:'assets/flocking.png', description:'A flocking simulation built with Unity ECS, bringing 12,000 fish together in motion.',links:[['Download for PC',featured.match(/href="([^"]+)"/)[1]]]},
   ...personal.map(p=>({...p,image:'assets/'+p.image}))
 ].reverse().map(p=>({...p,category:p.category || 'PERSONAL GAME'}));
