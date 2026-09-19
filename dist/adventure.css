@@ -69,3 +69,4 @@ body:not(.world-ready) .island-card:not(.active){display:none}
 }
 
 
+.island-card[aria-label="ZIGIT"] > img{display:none!important}

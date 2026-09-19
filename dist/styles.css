@@ -60,6 +60,15 @@
 .company-project .company-media{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;align-items:center;padding:16px}
 .company-project .company-media>img{width:100%;height:auto;max-height:430px;object-fit:contain}
 .bubble-project .company-media{grid-template-columns:repeat(2,minmax(0,1fr))}
+.web-project .company-media{padding:28px;background:linear-gradient(145deg,#21302e,#121a1a)}
+.web-project .company-media{grid-template-columns:repeat(2,minmax(0,1fr))}
+.web-project .company-media>img{width:auto;max-width:100%;height:100%;max-height:520px;object-fit:contain;border-radius:8px}
+.web-preview{display:flex;flex-direction:column;align-items:flex-start;gap:12px;width:100%;padding:28px;border:1px solid #52645c;border-radius:10px;background:#182321;color:#f0f3ec;box-shadow:0 18px 40px #0b111066}
+.web-preview-label{font-size:12px;letter-spacing:.12em;color:var(--accent)}
+.web-preview strong{font:500 clamp(22px,3vw,34px)/1.15 var(--display);letter-spacing:-.5px;overflow-wrap:anywhere}
+.web-preview>span:not(.web-preview-label){font-size:15px;color:var(--muted)}
+.inline-link{color:var(--accent);text-decoration:underline;text-underline-offset:3px}
+.web-project .company-copy ul{margin-top:20px}
 .game-video{min-width:0;margin:0;position:relative}
 .game-video figcaption{font-size:12px;line-height:1.4;color:var(--muted);margin-bottom:8px}
 .store-link + .store-link{margin-left:24px}

@@ -80,6 +80,20 @@ export const games = [
     "category": "COMPANY GAME"
   },
   {
+    "title": "Bubble Shooter",
+    "platform": "ALL IN VIEWS · Mobile",
+    "image": "CV/images/bubble-shooter-map.png",
+    "description": "A colorful bubble shooter adventure with a hand-crafted map, satisfying match-and-pop levels, and daily rewards that keep the journey moving.",
+    "category": "COMPANY GAME"
+  },
+  {
+    "title": "ZIGIT",
+    "platform": "Full Stack Developer · Jan 2017–Jul 2019",
+    "image": "CV/images/zigit-mobile.png",
+    "description": "Web and mobile projects for companies including Fattal, Sanofi, SQLink and Netafim. Built websites, mobile applications and backend services.",
+    "category": "WEB & MOBILE"
+  },
+  {
     "title": "Trailz",
     "platform": "Lootheads · iOS & Android",
     "image": "CV/images/trailz-icon.png",
@@ -112,5 +126,5 @@ export const games = [
       ]
     ],
     "category": "COMPANY GAME"
-  }
+  },
 ];

@@ -1,6 +1,6 @@
 import { createFoxMotion } from './fox-motion.js';
 import { createAssets } from './world-assets.js';
-import { games } from './adventure-data.js';
+import { games as catalog } from './adventure-data.js';
 import { createEnvironment } from './environments.js';
 import { createCoinTrail } from './coin-trail.js';
 
@@ -9,6 +9,13 @@ const reduced = matchMedia('(prefers-reduced-motion: reduce)');
 let selected = 0;
 let moveScene = () => {};
 const visited = new Set([0]);
+const flocking = catalog.find(game => game.title === 'Flocking Simulation');
+const games = [...catalog];
+const featuredOrder = ['Flocking Simulation', 'ZIGIT', 'Bubble Shooter', 'Animals & Coins'];
+const featuredGames = featuredOrder.map(title => games.find(game => game.title === title)).filter(Boolean);
+const firstFeaturedIndex = Math.min(...featuredGames.map(game => games.indexOf(game)));
+for (const game of featuredGames) games.splice(games.indexOf(game), 1);
+games.splice(firstFeaturedIndex, 0, ...featuredGames);
 const cards = games.map((game, i) => {
   const card = document.createElement('article');
   card.className = 'island-card';
@@ -16,6 +23,7 @@ const cards = games.map((game, i) => {
   const top = document.createElement('div'); top.className = 'board-top';
   top.textContent = `${String(i + 1).padStart(2, '0')} / ${game.category}`;
   const image = document.createElement('img'); image.src = game.image; image.alt = `${game.title} artwork`;
+  if (game.title === 'ZIGIT') image.remove();
   const copy = document.createElement('div'); copy.className = 'board-copy';
   const platform = document.createElement('p'); platform.className = 'eyebrow'; platform.textContent = game.platform;
   const title = document.createElement('h2'); title.textContent = game.title;

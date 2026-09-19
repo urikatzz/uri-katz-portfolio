@@ -8,7 +8,7 @@ const text = value => value.replace(/<[^>]+>/g, '').replace(/&amp;/g, '&').trim(
 const companies = [...html.matchAll(/<article class="company-project[\s\S]*?<\/article>/g)].map(([article]) => ({
   title: text(article.match(/<h3>(.*?)<\/h3>/)[1]),
   platform: text(article.match(/<p class="company-platform">(.*?)<\/p>/)[1]),
-  image: article.match(/class="company-title"><img src="([^"]+)"/)[1],
+  image: (article.match(/class="company-title"><img src="([^"]+)"/) || article.match(/<div class="company-media[^"]*">[\s\S]*?<img src="([^"]+)"/))[1],
   description: text(article.match(/class="company-platform">.*?<\/p><p>(.*?)<\/p>/)[1]),
   links: [...article.matchAll(/<a class="store-link" href="([^"]+)"[^>]*>(.*?)<\/a>/g)].map(([,url,label]) => [text(label).replace(' ↗',''),url]),
   category: 'COMPANY GAME'
