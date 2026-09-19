@@ -59,6 +59,7 @@
 .company-project{grid-template-columns:minmax(0,1fr) minmax(0,1.65fr)}
 .company-project .company-media{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;align-items:center;padding:16px}
 .company-project .company-media>img{width:100%;height:auto;max-height:430px;object-fit:contain}
+.bubble-project .company-media{grid-template-columns:repeat(2,minmax(0,1fr))}
 .game-video{min-width:0;margin:0;position:relative}
 .game-video figcaption{font-size:12px;line-height:1.4;color:var(--muted);margin-bottom:8px}
 .store-link + .store-link{margin-left:24px}
