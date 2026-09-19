@@ -5,6 +5,17 @@ import { createEnvironment } from './environments.js';
 import { createCoinTrail } from './coin-trail.js';
 
 const $ = id => document.getElementById(id);
+const imageViewer = document.createElement('dialog');
+imageViewer.className = 'image-viewer';
+imageViewer.setAttribute('aria-label', 'Project image');
+const closeImage = document.createElement('button');
+closeImage.type = 'button';
+closeImage.textContent = 'Close ×';
+const enlargedImage = document.createElement('img');
+imageViewer.append(closeImage, enlargedImage);
+document.body.append(imageViewer);
+closeImage.addEventListener('click', () => imageViewer.close());
+imageViewer.addEventListener('click', event => { if (event.target === imageViewer) imageViewer.close(); });
 const reduced = matchMedia('(prefers-reduced-motion: reduce)');
 let selected = 0;
 let moveScene = () => {};
@@ -23,7 +34,19 @@ const cards = games.map((game, i) => {
   const top = document.createElement('div'); top.className = 'board-top';
   top.textContent = `${String(i + 1).padStart(2, '0')} / ${game.category}`;
   const image = document.createElement('img'); image.src = game.image; image.alt = `${game.title} artwork`;
-  if (game.title === 'ZIGIT') image.remove();
+  const imageButton = document.createElement('button');
+  imageButton.type = 'button';
+  imageButton.className = 'board-image';
+  imageButton.setAttribute('aria-label', `Enlarge ${game.title} image`);
+  imageButton.append(image);
+  const classifyImage = () => imageButton.classList.toggle('portrait', image.naturalHeight > image.naturalWidth * 1.2);
+  image.addEventListener('load', classifyImage);
+  if (image.complete) classifyImage();
+  imageButton.addEventListener('click', () => {
+    enlargedImage.src = image.src;
+    enlargedImage.alt = image.alt;
+    imageViewer.showModal();
+  });
   const copy = document.createElement('div'); copy.className = 'board-copy';
   const platform = document.createElement('p'); platform.className = 'eyebrow'; platform.textContent = game.platform;
   const title = document.createElement('h2'); title.textContent = game.title;
@@ -33,7 +56,10 @@ const cards = games.map((game, i) => {
   (game.links || []).forEach(([label, url]) => {
     const a = document.createElement('a'); a.textContent = `${label} ↗`; a.href = url; a.target = '_blank'; a.rel = 'noopener noreferrer'; links.append(a);
   });
-  copy.append(platform, title, description, links); card.append(top, image, copy);
+  copy.append(platform, title, description, links);
+  card.append(top);
+  if (game.title !== 'ZIGIT') card.append(imageButton);
+  card.append(copy);
   $('island-cards').append(card); return card;
 });
 const buttons = games.map((game, i) => {
@@ -87,6 +113,7 @@ let lastKey = 0;
 let wheelTotal = 0;
 let wheelLock = false;
 window.addEventListener('keydown', event => {
+  if (imageViewer.open) return;
   if (event.altKey || event.ctrlKey || event.metaKey || /INPUT|TEXTAREA|SELECT/.test(event.target.tagName)) return;
   const direction = ['ArrowUp', 'w', 'W'].includes(event.key) ? 1 : ['ArrowDown', 's', 'S'].includes(event.key) ? -1 : 0;
   if (!direction) return;
@@ -95,6 +122,7 @@ window.addEventListener('keydown', event => {
   lastKey = performance.now(); select(selected + direction);
 });
 window.addEventListener('wheel', event => {
+  if (imageViewer.open) return;
   if (event.ctrlKey || event.metaKey || event.shiftKey || wheelLock) return;
   // Track a small amount of trackpad movement before changing level. This
   // prevents one natural wheel gesture from skipping several islands.

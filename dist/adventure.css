@@ -69,4 +69,10 @@ body:not(.world-ready) .island-card:not(.active){display:none}
 }
 
 
-.island-card[aria-label="ZIGIT"] > img{display:none!important}
+.board-image{display:block;width:100%;padding:8px;border:0;border-block:3px solid #c6a574;background:#e3d8ba;cursor:zoom-in}
+.board-image img{display:block;width:100%;height:145px;object-fit:contain}
+.board-image.portrait img{height:220px}
+.image-viewer{width:fit-content;max-width:94vw;max-height:94svh;padding:48px 12px 12px;border:1px solid #856344;border-radius:12px;background:#f4ebd2;color:#304234}
+.image-viewer::backdrop{background:#101b18d9}
+.image-viewer>button{position:absolute;right:12px;top:8px;padding:6px 12px;cursor:pointer;border:1px solid #856344;border-radius:6px;background:#f4ebd2;color:#304234}
+.image-viewer>img{display:block;max-width:85vw;max-height:78svh;width:auto;height:auto;object-fit:contain}
