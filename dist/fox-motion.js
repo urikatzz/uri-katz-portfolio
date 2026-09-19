@@ -23,8 +23,8 @@ export function createFoxMotion(T, rig, reduced) {
         const gap=target-height,wanted=Math.abs(gap)>.002;
         // Approach and turn before pulling up. Settle back only after stopping.
         engage=clamp(engage+(wanted?dt*3.5:-dt*2.6));
-        const desired=engage<.98?0:Math.sign(gap)*Math.min(1.85,Math.sqrt(2*5*Math.abs(gap)));
-        const accel=clamp(desired-speed,-dt*6,dt*6);speed+=accel;
+        const desired=engage<.98?0:Math.sign(gap)*Math.min(2.7,Math.sqrt(2*7.1*Math.abs(gap)));
+        const accel=clamp(desired-speed,-dt*8,dt*8);speed+=accel;
         const delta=speed*dt;
         if(Math.abs(gap)>0&&Math.abs(delta)>=Math.abs(gap)&&Math.sign(delta)===Math.sign(gap)){height=target;speed=0;arrival=0;}else height+=delta;
         if(!wanted)arrival=Math.min(1,arrival+dt*3);
