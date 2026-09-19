@@ -94,6 +94,13 @@ export const games = [
     "category": "WEB & MOBILE"
   },
   {
+    "title": "Jelly Tap Blast",
+    "platform": "ALL IN VIEWS · Mobile",
+    "image": "CV/images/jelly-tap-blast-1.png",
+    "description": "A colorful match puzzle game built around quick taps, satisfying chain reactions, and bright jelly pieces.",
+    "category": "COMPANY GAME"
+  },
+  {
     "title": "Trailz",
     "platform": "Lootheads · iOS & Android",
     "image": "CV/images/trailz-icon.png",

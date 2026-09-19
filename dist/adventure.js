@@ -11,7 +11,7 @@ let moveScene = () => {};
 const visited = new Set([0]);
 const flocking = catalog.find(game => game.title === 'Flocking Simulation');
 const games = [...catalog];
-const featuredOrder = ['Flocking Simulation', 'ZIGIT', 'Bubble Shooter', 'Animals & Coins'];
+const featuredOrder = ['Flocking Simulation', 'ZIGIT', 'Jelly Tap Blast', 'Bubble Shooter', 'Animals & Coins'];
 const featuredGames = featuredOrder.map(title => games.find(game => game.title === title)).filter(Boolean);
 const firstFeaturedIndex = Math.min(...featuredGames.map(game => games.indexOf(game)));
 for (const game of featuredGames) games.splice(games.indexOf(game), 1);
