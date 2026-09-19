@@ -89,7 +89,7 @@ export const games = [
   {
     "title": "Bubble Shooter",
     "platform": "ALL IN VIEWS · Mobile",
-    "image": "CV/images/bubble-shooter-map.png",
+    "image": "CV/images/bubble-shooter-gameplay.png",
     "description": "A colorful bubble shooter adventure with a hand-crafted map, satisfying match-and-pop levels, and daily rewards that keep the journey moving.",
     "category": "COMPANY GAME"
   },
