@@ -76,7 +76,7 @@
 .game-video video{display:block;width:100%;aspect-ratio:9/16;max-height:430px;object-fit:contain;background:#090b0a;border-radius:8px}
 @media(max-width:1000px){.company-project{grid-template-columns:1fr}.company-project .company-media{justify-content:stretch}}
 @media(max-width:650px){.company-project .company-media{grid-template-columns:repeat(3,minmax(145px,1fr));overflow-x:auto;justify-content:start;padding:12px;gap:12px}.game-video video{max-height:330px}}
-.career-highlights{margin:12px 0 0;padding-left:20px;color:var(--muted);font-size:15px;line-height:1.65}.career-highlights li+li{margin-top:9px}.career-highlights strong{color:var(--text);font-weight:600}
+.career-highlights{margin:12px 0 0;color:var(--muted);font-size:15px;line-height:1.65}.career-highlights p{margin:0}.career-highlights p+p{margin-top:9px}.career-highlights strong{color:var(--text);font-weight:600}
 .contact-address{font-size:clamp(17px,3vw,24px);margin:18px 0;overflow-wrap:anywhere;user-select:all}
 .contact-options{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
 .contact-options a{min-height:48px;display:inline-flex;align-items:center;padding:11px 18px;border-radius:6px}
