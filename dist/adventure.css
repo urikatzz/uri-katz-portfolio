@@ -76,3 +76,67 @@ body:not(.world-ready) .island-card:not(.active){display:none}
 .image-viewer::backdrop{background:#101b18d9}
 .image-viewer>button{position:absolute;right:12px;top:8px;padding:6px 12px;cursor:pointer;border:1px solid #856344;border-radius:6px;background:#f4ebd2;color:#304234}
 .image-viewer>img{display:block;max-width:85vw;max-height:78svh;width:auto;height:auto;object-fit:contain}
+
+/* ---- Atmosphere & polish ---- */
+main::after{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;
+ background:
+  radial-gradient(ellipse 85% 75% at 62% 48%,transparent 55%,rgba(38,32,20,.20) 100%),
+  radial-gradient(circle at 80% 10%,rgba(255,244,205,.20),transparent 38%),
+  linear-gradient(to bottom,rgba(255,255,255,.10),transparent 16%,transparent 78%,rgba(30,26,16,.13));
+ transition:background .6s}
+body.night-world main::after{background:
+  radial-gradient(ellipse 85% 75% at 62% 48%,transparent 45%,rgba(4,8,20,.45) 100%),
+  radial-gradient(circle at 80% 10%,rgba(190,210,255,.14),transparent 38%),
+  linear-gradient(to bottom,rgba(0,0,0,.12),transparent 16%,transparent 78%,rgba(0,0,10,.25))}
+body::after{content:"";position:fixed;inset:0;z-index:4;pointer-events:none;opacity:.07;mix-blend-mode:multiply;
+ background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)'/%3E%3C/svg%3E")}
+body.night-world::after{mix-blend-mode:screen;opacity:.05}
+
+.wordmark{transition:color .4s,transform .3s}.wordmark:hover{transform:translateX(2px)}
+.back{transition:color .3s,border-color .3s,transform .3s}.back:hover{color:var(--orange);border-color:var(--orange);transform:translateY(-1px)}
+
+.coin-quest{background:rgba(250,248,236,.74);backdrop-filter:blur(16px) saturate(1.25);-webkit-backdrop-filter:blur(16px) saturate(1.25);border:1px solid rgba(255,255,255,.75);box-shadow:0 18px 50px -18px rgba(52,55,34,.35),inset 0 1px 0 #fff8;animation:hud-in .8s .2s both cubic-bezier(.2,.7,.2,1)}
+.coin-icon{position:relative;overflow:hidden}
+.coin-icon::after{content:"";position:absolute;inset:-30% -60%;background:linear-gradient(105deg,transparent 40%,rgba(255,255,255,.75) 50%,transparent 60%);transform:translateX(-100%);animation:coin-shine 4.5s 1s infinite}
+.coin-meter{height:7px}.coin-meter span{background:linear-gradient(90deg,#e9b23e,#f6d36b);box-shadow:0 0 10px #f2c24f88}
+.coin-score.bump strong{animation:score-bump .45s cubic-bezier(.3,1.6,.5,1)}
+.coin-score.bump .coin-icon{animation:coin-spin .55s ease-out}
+.coin-plus{position:absolute;left:52px;top:-4px;font:700 15px 'Space Grotesk',sans-serif;color:#b98118;pointer-events:none;animation:plus-float .9s ease-out forwards}
+.coin-score{position:relative}
+.coin-quest.complete{box-shadow:0 0 0 2px #f2c24f66,0 18px 50px -14px #e9b23e88}
+
+.controls{background:rgba(250,250,241,.72);backdrop-filter:blur(18px) saturate(1.3);-webkit-backdrop-filter:blur(18px) saturate(1.3);border:1px solid rgba(255,255,255,.8);box-shadow:0 16px 44px -14px rgba(40,50,35,.4),inset 0 1px 0 #fff9;animation:fade-in .8s .35s both}
+.controls button{transition:background .2s,color .2s,transform .2s,box-shadow .2s}
+.controls button:hover:not(:disabled){transform:translateY(-2px)}
+.controls button:active:not(:disabled){transform:scale(.94)}
+#up{background:var(--ink);color:#fff;border-color:var(--ink)}
+#up:hover:not(:disabled){background:#b9562d;border-color:#b9562d}
+#up.hint{animation:hint-pulse 1.8s infinite}
+body.night-world .controls{background:rgba(24,34,48,.6);border-color:rgba(255,255,255,.18)}
+body.night-world .controls button{border-color:rgba(255,255,255,.28);color:#edf3ef}
+body.night-world .controls{color:#edf3ef}body.night-world .controls small{color:#b9c8ce}
+body.night-world #up{background:#ffc78a;color:#1c2a3a;border-color:#ffc78a}
+body.night-world .coin-quest{background:rgba(28,38,54,.62);border-color:rgba(255,255,255,.16);color:#edf3ef}
+body.night-world .quest-label,body.night-world #coin-message,body.night-world .coin-score>span:last-child{color:#c9d6dc}
+
+.trail{animation:fade-in .8s .5s both}
+#stops button{transition:transform .2s}#stops button:hover{transform:scale(1.35)}
+#stops button::after{transition:background .2s,box-shadow .3s,transform .2s}
+
+.island-card{box-shadow:inset 0 0 0 2px #d3b77d,5px 6px 0 #57472f,0 26px 40px -14px rgba(30,24,12,.5);background:linear-gradient(#f7eed6,#f1e6c8)}
+.island-card.active{box-shadow:inset 0 0 0 2px #dfbe80,5px 6px 0 #57472f,0 26px 40px -14px rgba(30,24,12,.5),0 0 28px #f2d48a66}
+.board-links a{transition:background .2s,transform .2s,box-shadow .2s}
+.board-links a:hover{transform:translateY(-2px);box-shadow:0 6px 0 -2px #57472f66}
+.island-card>img{transition:filter .4s}.island-card:hover>img{filter:saturate(1.12) contrast(1.03)}
+
+a:focus-visible,button:focus-visible{outline:2px solid var(--orange);outline-offset:3px;border-radius:6px}
+
+@keyframes hud-in{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes fade-in{from{opacity:0}to{opacity:1}}
+@keyframes coin-shine{0%,70%,100%{transform:translateX(-100%)}85%{transform:translateX(100%)}}
+@keyframes score-bump{0%{transform:scale(1)}40%{transform:scale(1.3);color:#b98118}100%{transform:scale(1)}}
+@keyframes coin-spin{from{transform:rotateY(0)}to{transform:rotateY(360deg)}}
+@keyframes plus-float{from{opacity:1;transform:translateY(0)}to{opacity:0;transform:translateY(-26px)}}
+@keyframes hint-pulse{0%{box-shadow:0 0 0 0 rgba(185,86,45,.55)}70%,100%{box-shadow:0 0 0 14px rgba(185,86,45,0)}}
+@media(max-width:700px){main::after{background:radial-gradient(ellipse 120% 90% at 50% 50%,transparent 60%,rgba(38,32,20,.16) 100%)}.coin-quest{backdrop-filter:blur(10px)}}
+@media(prefers-reduced-motion:reduce){.coin-quest,.controls,.trail,.coin-icon::after,#up.hint,.coin-score.bump strong,.coin-score.bump .coin-icon,.coin-plus{animation:none!important}}

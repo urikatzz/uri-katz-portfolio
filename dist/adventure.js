@@ -112,6 +112,8 @@ updateControlHint();
 let lastKey = 0;
 let wheelTotal = 0;
 let wheelLock = false;
+let wheelDirection = 0;
+let wheelTimer = 0;
 window.addEventListener('keydown', event => {
   if (imageViewer.open) return;
   if (event.altKey || event.ctrlKey || event.metaKey || /INPUT|TEXTAREA|SELECT/.test(event.target.tagName)) return;
@@ -123,19 +125,25 @@ window.addEventListener('keydown', event => {
 });
 window.addEventListener('wheel', event => {
   if (imageViewer.open) return;
-  if (event.ctrlKey || event.metaKey || event.shiftKey || wheelLock) return;
-  // Track a small amount of trackpad movement before changing level. This
-  // prevents one natural wheel gesture from skipping several islands.
+  if (event.ctrlKey || event.metaKey || event.shiftKey || !event.deltaY) return;
+  const direction = event.deltaY > 0 ? -1 : 1;
+  // Trackpad momentum keeps scrolling the same way after a step, so ignore that while locked. Scrolling the other
+  // way is a real change of mind and is never locked out.
+  if (wheelLock && direction === wheelDirection) return;
+  // Count movement only in the current direction, so a reversal is not first spent cancelling leftover movement.
+  // A small amount is needed before changing level, which stops one natural gesture skipping several islands.
+  if (Math.sign(wheelTotal) !== Math.sign(event.deltaY)) wheelTotal = 0;
   wheelTotal += event.deltaY;
   if (Math.abs(wheelTotal) < 42) return;
-  const direction = wheelTotal > 0 ? -1 : 1;
   wheelTotal = 0;
   const next = selected + direction;
   if (next === selected) return;
   event.preventDefault();
   wheelLock = true;
+  wheelDirection = direction;
   select(next);
-  window.setTimeout(() => { wheelLock = false; }, 420);
+  window.clearTimeout(wheelTimer);
+  wheelTimer = window.setTimeout(() => { wheelLock = false; }, 420);
 }, { passive: false });
 select(0);
 
@@ -241,7 +249,7 @@ function startWorld(T, CSS3DRenderer, CSS3DObject) {
   new ResizeObserver(resize).observe(host);resize();
   function frame(time){
     const dt=Math.min((time-lastTime)/1000,.05);lastTime=time;
-    if(!document.hidden){
+    if(!document.hidden)try{
       const pose=foxMotion.update(dt,time);
       currentY=pose.height;
       coinTrail.update(currentY, dt, time);
@@ -267,7 +275,7 @@ function startWorld(T, CSS3DRenderer, CSS3DObject) {
       camera.layers.set(1);
       foxRenderer.render(scene,camera);
       camera.layers.set(0);
-    }
+    }catch(error){console.error('frame skipped',error);}
     requestAnimationFrame(frame);
   }
   requestAnimationFrame(frame);

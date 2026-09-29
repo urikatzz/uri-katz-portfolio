@@ -45,7 +45,7 @@ export function createEnvironment(host, reduced) {
     if(theme.type==='ocean'){c.fillStyle='#699fa744';c.fillRect(0,height*.76,width,height*.24);c.strokeStyle='#fff4cf66';for(let i=0;i<25;i++){const x=random(i)*width,y=height*(.78+random(i+45)*.21);c.beginPath();c.moveTo(x,y);c.lineTo(x+20+random(i+2)*90,y);c.stroke();}}
     return layer;
   }
-  function resize(){width=host.clientWidth;height=host.clientHeight;const ratio=Math.min(devicePixelRatio,1.5);canvas.width=width*ratio;canvas.height=height*ratio;cache=environments.map(paint);}
+  function resize(){if(!host.clientWidth||!host.clientHeight)return;width=host.clientWidth;height=host.clientHeight;const ratio=Math.min(devicePixelRatio,1.5);canvas.width=width*ratio;canvas.height=height*ratio;cache=environments.map(paint);}
   new ResizeObserver(resize).observe(host);resize();
   function weather(theme, time, weight) {
     if(weight<.001)return;

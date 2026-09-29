@@ -90,52 +90,334 @@ export function createAssets(T) {
     beam(p,0x514b3b,x-.2,.66,z,.32,.055,.32,.02);
   }
   function fox(parent){
-    const root=new T.Group();parent.add(root);root.scale.setScalar(1.15);
-    const body=new T.Group();root.add(body);const orange=0xd77836,cream=0xffe8c3,dark=0x372d2b;
-    pebble(body,orange,0,.62,0,.29,.46,.24);
-    pebble(body,cream,0,.64,.19,.21,.32,.09);
-    const head=new T.Group();head.position.set(0,1.17,.035);body.add(head);
-    pebble(head,orange,0,0,0,.4,.34,.3);
-    for(const side of [-1,1]){
-      const ear=shape(new T.ConeGeometry(.18,.46,4),orange,head,side*.25,.32,-.025);ear.rotation.z=-side*.2;ear.rotation.y=Math.PI/4;
-      const inner=shape(new T.ConeGeometry(.095,.29,3),0x573c35,head,side*.25,.35,.068);inner.rotation.z=-side*.2;
-      const cheek=pebble(head,cream,side*.19,-.09,.16,.23,.16,.18);cheek.rotation.z=side*.25;
-      pebble(head,dark,side*.17,.04,.272,.052,.067,.028);
-      pebble(head,0xffffff,side*.17-.012,.064,.296,.014,.018,.009);
-      const brow=pebble(head,0x8e472a,side*.18,.145,.245,.077,.024,.022);brow.rotation.z=side*.15;
+    // A chubby, toy-like fox in the spirit of a designer vinyl figure: a wide round head whose muzzle is part of the
+    // skull, small glossy dot eyes, rounded ears (dark rims, orange faces), a cream lower face and bib, flat-soled dark
+    // boots and a fat tapered tail with a cream tip. At rest it stands on two feet with relaxed arms; the rig reaches for the ladder to climb.
+    // Shading is blended across every join (shoulders, hips, tail base, neck, ears) so the body reads as one surface.
+    const DETAIL=3,SMOOTH=11,IDLE_LIFT=.12,GROUND=-.05;
+    const C={orange:0xe8761f,cream:0xf8e6c2,dark:0x3b2a22};
+    const furMat=new T.MeshStandardMaterial({vertexColors:true,roughness:.85,emissive:0x3a1c0c,emissiveIntensity:.14});
+    const tint=new T.Color(),blendA=new T.Color(),blendB=new T.Color();
+    const ss=v=>{v=Math.max(0,Math.min(1,v));return v*v*(3-2*v);};
+    const step=(a,b,x)=>ss((x-a)/(b-a));
+    const mix=(a,b,t)=>blendA.set(a).lerp(blendB.set(b),Math.max(0,Math.min(1,t)));
+    // Average normals across shared positions so the figure shades softly.
+    function smoothNormals(g){
+      const p=g.attributes.position,n=g.attributes.normal,sum=new Map();
+      const key=i=>`${Math.round(p.getX(i)*1e4)},${Math.round(p.getY(i)*1e4)},${Math.round(p.getZ(i)*1e4)}`;
+      for(let i=0;i<p.count;i++){const k=key(i),a=sum.get(k)||[0,0,0];a[0]+=n.getX(i);a[1]+=n.getY(i);a[2]+=n.getZ(i);sum.set(k,a);}
+      for(let i=0;i<p.count;i++){const a=sum.get(key(i)),l=Math.hypot(a[0],a[1],a[2])||1;n.setXYZ(i,a[0]/l,a[1]/l,a[2]/l);}
     }
-    pebble(head,cream,0,-.105,.31,.16,.1,.2);pebble(head,dark,0,-.075,.48,.066,.046,.043);
-    rod(head,0x725045,[0,-.12,.476],[0,-.16,.44],.01);
-    // A little teal scarf makes the fox readable against orange and green scenery.
-    const scarf=shape(new T.TorusGeometry(.205,.065,6,16),0x357d7c,body,0,.91,0);scarf.rotation.x=Math.PI/2;
-    const ribbon=beam(body,0x357d7c,.21,.74,.19,.12,.32,.055,.015);ribbon.rotation.z=.3;
-    const paws=[];
-    const down=new T.Vector3(0,1,0);
-    for(const side of [-1,1])for(const upper of [false,true]){
-      const shoulder=new T.Vector3(side*(upper?.27:.17),upper?.82:.34,0);
-      const first=pebble(body,orange,0,0,0,.09,1,.09);
-      const second=pebble(body,upper?orange:0xa65730,0,0,0,.08,1,.08);
-      const joint=pebble(body,orange,0,0,0,.095,.095,.095);
-      const paw=pebble(body,dark,0,0,0,.1,.08,upper?.105:.14);
-      const rest=new T.Vector3(shoulder.x,upper?.49:.04,.07);
-      const length=upper?.34:.30;
-      function segment(part,a,b){const delta=b.clone().sub(a);part.position.copy(a).add(b).multiplyScalar(.5);part.scale.y=delta.length()*.55;part.quaternion.setFromUnitVectors(down,delta.normalize());}
-      function pose(target,grip=0){
-        const reach=(upper?.21:.18)*(1-grip)+length*grip;
-        const direction=target.clone().sub(shoulder),distance=Math.min(direction.length(),reach*2-.001);direction.normalize();
-        const endpoint=shoulder.clone().addScaledVector(direction,distance);
-        const bend=new T.Vector3(side*.5,0,upper?-.9:.9);bend.addScaledVector(direction,-bend.dot(direction)).normalize();
-        const elbow=shoulder.clone().addScaledVector(direction,distance*.5).addScaledVector(bend,Math.sqrt(reach*reach-distance*distance*.25));
-        segment(first,shoulder,elbow);segment(second,elbow,endpoint);joint.position.copy(elbow);paw.position.copy(endpoint);paw.rotation.x=-grip*.35;
+    // Colour a geometry per vertex from a function of position (so markings blend cleanly), then soften normals.
+    function figure(source,colorAt){
+      const g=source.index?source.toNonIndexed():source,p=g.attributes.position,colors=new Float32Array(p.count*3);
+      for(let i=0;i<p.count;i++){tint.set(colorAt(p.getX(i),p.getY(i),p.getZ(i)));colors.set([tint.r,tint.g,tint.b],i*3);}
+      g.setAttribute('color',new T.BufferAttribute(colors,3));g.computeVertexNormals();smoothNormals(g);
+      return g;
+    }
+    const ball=d=>new T.IcosahedronGeometry(1,d);
+    const deform=(g,fn)=>{const p=g.attributes.position;for(let i=0;i<p.count;i++){const v=fn(p.getX(i),p.getY(i),p.getZ(i));p.setXYZ(i,v[0],v[1],v[2]);}return g;};
+    const part=(p,g,x=0,y=0,z=0)=>{const m=new T.Mesh(g,furMat);m.position.set(x,y,z);m.castShadow=true;m.receiveShadow=true;p.add(m);return m;};
+
+    // --- Join blending: a nearest-vertex probe of a finished surface lets neighbouring parts borrow its normals
+    // near where they meet, so the shading is continuous across the join instead of showing a crease.
+    const CELL=.1,cellKey=(ix,iy,iz)=>(ix+512)*1048576+(iy+512)*1024+(iz+512);
+    function makeProbe(geometry,matrix){
+      const p=geometry.attributes.position,n=geometry.attributes.normal,count=p.count;
+      const pos=new Float32Array(count*3),nor=new Float32Array(count*3),cells=new Map(),seen=new Set();
+      const v=new T.Vector3(),m=new T.Vector3(),rot=new T.Matrix3().getNormalMatrix(matrix);
+      let unique=0;
+      for(let i=0;i<count;i++){
+        v.fromBufferAttribute(p,i).applyMatrix4(matrix);
+        // Non-indexed meshes repeat each position for every triangle that uses it; keep one copy.
+        const id=`${Math.round(v.x*1e4)},${Math.round(v.y*1e4)},${Math.round(v.z*1e4)}`;
+        if(seen.has(id))continue;seen.add(id);
+        m.fromBufferAttribute(n,i).applyMatrix3(rot).normalize();
+        pos[unique*3]=v.x;pos[unique*3+1]=v.y;pos[unique*3+2]=v.z;nor[unique*3]=m.x;nor[unique*3+1]=m.y;nor[unique*3+2]=m.z;
+        const k=cellKey(Math.floor(v.x/CELL),Math.floor(v.y/CELL),Math.floor(v.z/CELL));
+        const list=cells.get(k);if(list)list.push(unique);else cells.set(k,[unique]);
+        unique++;
       }
-      pose(rest);paws.push({side,upper,rest,pose,tip:paw});
+      // Smoothed lookup: distance to the surface (mean of the nearest few vertices, Infinity if none is close) and their
+      // inverse-distance-weighted normal, written to `out`. Averaging keeps the blend weight steady between vertices.
+      const K=4,bd=new Float64Array(K),bi=new Int32Array(K);
+      return (x,y,z,out)=>{
+        // Check the 8 cells around the query point: that covers everything within CELL/2 (5cm) of it.
+        const fx=x/CELL,fy=y/CELL,fz=z/CELL,ix=Math.floor(fx),iy=Math.floor(fy),iz=Math.floor(fz);
+        const ox=fx-ix<.5?-1:1,oy=fy-iy<.5?-1:1,oz=fz-iz<.5?-1:1;bd.fill(Infinity);bi.fill(-1);
+        for(let a=0;a<8;a++){
+          const list=cells.get(cellKey(ix+(a&1?ox:0),iy+(a&2?oy:0),iz+(a&4?oz:0)));if(!list)continue;
+          for(let k=0;k<list.length;k++){
+            const i=list[k],ex=pos[i*3]-x,ey=pos[i*3+1]-y,ez=pos[i*3+2]-z,d=ex*ex+ey*ey+ez*ez;
+            if(d>=bd[K-1])continue;
+            let slot=K-1;while(slot>0&&bd[slot-1]>d){bd[slot]=bd[slot-1];bi[slot]=bi[slot-1];slot--;}
+            bd[slot]=d;bi[slot]=i;
+          }
+        }
+        if(bi[0]<0)return Infinity;
+        let nx=0,ny=0,nz=0,dist=0,used=0;
+        for(let k=0;k<K;k++){
+          if(bi[k]<0)break;const d=Math.sqrt(bd[k]),w=1/(d*d+1e-5);
+          nx+=nor[bi[k]*3]*w;ny+=nor[bi[k]*3+1]*w;nz+=nor[bi[k]*3+2]*w;dist+=d;used++;
+        }
+        out.set(nx,ny,nz).normalize();return dist/used;
+      };
     }
-    const tail=new T.Group();tail.position.set(.14,.36,-.13);body.add(tail);tail.rotation.z=-.85;
-    const curve=new T.CatmullRomCurve3([new T.Vector3(0,0,0),new T.Vector3(.05,.3,-.15),new T.Vector3(.03,.7,-.2),new T.Vector3(-.12,1.1,-.12)]);
-    const rings=18,segments=10,positions=[],cols=[],idx=[];
-    for(let i=0;i<=rings;i++){const t=i/rings,c=curve.getPoint(t),r=.035+Math.sin(Math.PI*t)*.235,col=new T.Color(t>.69?cream:orange);for(let j=0;j<=segments;j++){const a=j/segments*Math.PI*2;positions.push(c.x+Math.cos(a)*r,c.y,c.z+Math.sin(a)*r);cols.push(col.r,col.g,col.b);if(i<rings&&j<segments){const n=i*(segments+1)+j;idx.push(n,n+1,n+segments+1,n+1,n+segments+2,n+segments+1);}}}
-    const geo=new T.BufferGeometry();geo.setAttribute('position',new T.Float32BufferAttribute(positions,3));geo.setAttribute('color',new T.Float32BufferAttribute(cols,3));geo.setIndex(idx);geo.computeVertexNormals();const fur=new T.Mesh(geo,new T.MeshStandardMaterial({vertexColors:true,roughness:.9}));fur.castShadow=true;tail.add(fur);
-    return {root,body,head,tail,paws,ribbon};
+    const NEAR=.015,FAR=.05; // blend band; the 8-cell lookup is exact out to CELL/2 = FAR
+    // Pull `geometry`'s normals (its local space -> body space via `matrix`) toward the probed surface near the join.
+    // mode 'avg' averages the two surfaces (use on both sides of a static join); 'take' adopts the probed normal.
+    function blendNormals(geometry,matrix,probe,mode){
+      const p=geometry.attributes.position,n=geometry.attributes.normal;
+      const rot=new T.Matrix3().getNormalMatrix(matrix),inv=rot.clone().transpose();
+      const v=new T.Vector3(),a=new T.Vector3(),b=new T.Vector3();
+      for(let i=0;i<p.count;i++){
+        v.fromBufferAttribute(p,i).applyMatrix4(matrix);
+        const d=probe(v.x,v.y,v.z,b);if(d>=FAR)continue;
+        a.fromBufferAttribute(n,i).applyMatrix3(rot).normalize();
+        if(mode==='avg')b.add(a).normalize();
+        a.lerp(b,1-step(NEAR,FAR,d)).normalize().applyMatrix3(inv).normalize();
+        n.setXYZ(i,a.x,a.y,a.z);
+      }
+      n.needsUpdate=true;
+    }
+    // Blend two static surfaces toward each other where they meet (both sides adopt the averaged normal).
+    function weld(geoA,matA,geoB,matB){
+      const probeA=makeProbe(geoA,matA),probeB=makeProbe(geoB,matB);
+      blendNormals(geoA,matA,probeB,'avg');blendNormals(geoB,matB,probeA,'avg');
+    }
+    const placed=(obj,parentMatrix)=>{obj.updateMatrix();return parentMatrix?parentMatrix.clone().multiply(obj.matrix):obj.matrix.clone();};
+
+    const eyes=[],ears=[];
+    const root=new T.Group();parent.add(root);root.scale.setScalar(1.17);
+    const body=new T.Group();root.add(body);
+
+    // Torso: a plump pear. Round haunches and a soft belly are part of the same surface, so there are no hip seams.
+    const torsoShape=(x,y,z)=>{
+      let X=x*.335*(1+.16*Math.max(0,-y)-.1*Math.max(0,y)),Y=y*.38,Z=z*.27*(1+.08*Math.max(0,-y)-.06*Math.max(0,y));
+      for(const s of [-1,1]){
+        const g=Math.exp(-(((X-s*.27)**2)+((Y+.28)**2)+((Z+.06)**2))/(2*.16*.16));
+        X+=x*.13*g;Y+=y*.07*g;Z+=z*.13*g;
+      }
+      const belly=Math.exp(-((X**2)+((Y+.24)**2)+((Z-.1)**2))/(2*.17*.17));
+      return [X,Y,Z+.06*belly*Math.max(0,z)];
+    };
+    const torsoGeo=figure(deform(ball(SMOOTH),torsoShape),(x,y,z)=>{
+      const r=Math.hypot(x/.19,(y+.03)/.3);
+      return mix(C.orange,C.cream,(1-step(.86,1.14,r))*step(0,.07,z));
+    });
+    const torso=part(body,torsoGeo,0,.58,0);
+
+    // Head: wide and low. The muzzle is a forward swell of the skull (tapering toward the nose), not a separate bump.
+    const head=new T.Group();head.position.set(0,1.06,.03);head.scale.setScalar(.94);body.add(head);
+    const skullScale=(X,Y)=>{const yu=Y/.33;return [.44*(1+.1*Math.max(0,-yu)-.05*Math.max(0,yu)),1-.06*Math.max(0,yu)];};
+    const muzzleSwell=(X,Y)=>Math.exp(-(((X/.15)**2)+(((Y+.12)/.095)**2))/2);
+    const headShape=(x,y,z)=>{
+      const [wx,wz]=skullScale(0,y*.33);
+      let X=x*wx,Y=y*.33,Z=z*.37*wz;
+      if(Z>0){const g=muzzleSwell(X,Y),k=Math.min(1,Z/.15);Z+=.14*g*k;X*=1-.22*g*Math.min(1,Math.max(0,Z-.24)/.2);}
+      return [X,Y,Z];
+    };
+    // Height of the head surface at (X,Y) on the front, for placing the eyes, nose and mouth exactly on it.
+    const faceZ=(X,Y)=>{
+      const [wx,wz]=skullScale(X,Y),yu=Y/.33,q=1-(X/wx)**2-yu*yu;
+      const z0=.37*wz*Math.sqrt(Math.max(0,q));
+      return z0+.14*muzzleSwell(X,Y)*Math.min(1,z0/.15);
+    };
+    const maskLine=x=>-.115+.78*x*x;
+    const headGeo=figure(deform(ball(SMOOTH),headShape),(x,y,z)=>{
+      const line=maskLine(x);
+      return mix(C.orange,C.cream,(1-step(line-.026,line+.026,y))*step(-.12,.0,z));
+    });
+    part(head,headGeo);
+    part(head,figure(deform(ball(DETAIL),(x,y,z)=>[x*.056,y*.041,z*.042]).translate(0,-.098,faceZ(0,-.098)+.004),()=>C.dark));
+    for(const s of [-1,1]){
+      const pts=[[0,-.132],[0,-.156],[s*.042,-.172],[s*.09,-.163]].map(([x,y])=>new T.Vector3(x,y,faceZ(x,y)+.003));
+      part(head,figure(new T.TubeGeometry(new T.CatmullRomCurve3(pts),14,.0065,6),()=>C.dark));
+    }
+    // Small glossy dot eyes, set wide, each with a couple of highlights. Blinking squashes the eye.
+    const eyeMat=new T.MeshStandardMaterial({color:0x1a1210,roughness:.2}),glint=new T.MeshBasicMaterial({color:0xffffff,toneMapped:false});
+    const eyeBall=new T.SphereGeometry(1,24,16);
+    const eyePart=(eye,material,x,y,z,sx,sy,sz)=>{const m=new T.Mesh(eyeBall,material);m.position.set(x,y,z);m.scale.set(sx,sy,sz);eye.add(m);return m;};
+    // Rounded ears: a slim dark rim around an orange face. The dark fades to orange at the base so the ear grows out of the head.
+    const earProfile=[[0,0],[.21,0],[.206,.06],[.19,.15],[.16,.25],[.12,.34],[.075,.41],[.038,.447],[0,.462]];
+    const earGeo=(k,w=1)=>new T.LatheGeometry(earProfile.map(([r,y])=>new T.Vector2(r*k*w,y*k)),28).scale(1,1,.45);
+    const earRim=earGeo(1,1.08),earFace=earGeo(.8,1.08);
+    const earParts=[];
+    for(const s of [-1,1]){
+      const eye=new T.Group();eye.position.set(s*.215,-.02,faceZ(s*.215,-.02)-.012);eye.rotation.set(.07,s*.4,0);head.add(eye);
+      eyePart(eye,eyeMat,0,0,0,.058,.075,.034);
+      eyePart(eye,glint,-.015*s,.03,.032,.019,.022,.008);
+      eyePart(eye,glint,.019*s,-.025,.03,.009,.01,.006);
+      eyes.push(eye);
+      const ear=new T.Group();ear.position.set(s*.29,.18,-.02);ear.rotation.set(.1,0,-s*.3);head.add(ear);
+      const rim=figure(earRim.clone(),(x,y)=>mix(C.orange,C.dark,step(.02,.1,y)));
+      const face=figure(earFace.clone(),()=>C.orange);
+      part(ear,rim);part(ear,face,0,.03,.05);
+      earParts.push({ear,rim,face});
+      ears.push({ear,earZ:ear.rotation.z});
+    }
+    const setBlink=closed=>{for(const eye of eyes)eye.scale.y=Math.max(.08,1-.92*closed);};
+
+    // Limbs, in simple cartoon anatomy. An arm runs shoulder -> upper arm -> elbow -> forearm -> wrist -> mitten hand
+    // (rounded fingers plus a thumb); a leg runs hip -> thigh -> knee -> lower leg -> ankle -> foot (heel, arch, toes).
+    // Each limb's skin is one smooth tube rebuilt whenever the IK moves it: fuller at the elbow/knee, slim at the
+    // wrist/ankle, starting with a rounded cap and borrowing the torso's normals where it leaves the body, so there
+    // are no joint balls or seams. Resting arms stay compact beside the waist and extend to reach ladder rungs.
+    torso.updateMatrix();
+    const torsoMatrix=torso.matrix.clone(),torsoProbe=makeProbe(torsoGeo,torsoMatrix);
+    const RINGS=18,CAP=3,SIDES=18,ringCount=RINGS+1+CAP;
+    const limbNormal=new T.Vector3(),probeNormal=new T.Vector3();
+    function limbMesh(rs,rj,rw,bulge){
+      const count=ringCount*SIDES,geo=new T.BufferGeometry(),colors=new Float32Array(count*3),index=[];
+      tint.set(C.orange);for(let i=0;i<count;i++)colors.set([tint.r,tint.g,tint.b],i*3);
+      geo.setAttribute('position',new T.BufferAttribute(new Float32Array(count*3),3));
+      geo.setAttribute('normal',new T.BufferAttribute(new Float32Array(count*3),3));
+      geo.setAttribute('color',new T.BufferAttribute(colors,3));
+      for(let i=0;i<ringCount-1;i++)for(let j=0;j<SIDES;j++){
+        const a=i*SIDES+j,b=i*SIDES+(j+1)%SIDES,c=(i+1)*SIDES+j,d=(i+1)*SIDES+(j+1)%SIDES;
+        index.push(a,b,c,b,d,c);
+      }
+      geo.setIndex(index);
+      const mesh=new T.Mesh(geo,furMat);mesh.castShadow=true;mesh.receiveShadow=true;mesh.frustumCulled=false;body.add(mesh);
+      const point=new T.Vector3(),tangent=new T.Vector3(),n=new T.Vector3(),b=new T.Vector3(),ringAt=new T.Vector3();
+      const u1=new T.Vector3(),u2=new T.Vector3(),p1=new T.Vector3(),p2=new T.Vector3(),d1=new T.Vector3(),d2=new T.Vector3();
+      const last=new Float32Array(12);
+      return function update(start,elbow,end,ref){
+        const now=[start.x,start.y,start.z,elbow.x,elbow.y,elbow.z,end.x,end.y,end.z,ref.x,ref.y,ref.z];
+        if(now.every((v,k)=>Math.abs(v-last[k])<1e-5))return;
+        last.set(now);
+        u1.copy(elbow).sub(start);const l1=Math.max(1e-4,u1.length());u1.divideScalar(l1);
+        u2.copy(end).sub(elbow);const l2=Math.max(1e-4,u2.length());u2.divideScalar(l2);
+        const total=l1+l2,rc=Math.min(.1,.4*Math.min(l1,l2)),te=l1/total;
+        const pos=geo.attributes.position;
+        const put=(i,center,tan,r)=>{
+          n.crossVectors(tan,ref).normalize();b.crossVectors(tan,n);
+          for(let j=0;j<SIDES;j++){
+            const a=j/SIDES*Math.PI*2,cs=Math.cos(a)*r,sn=Math.sin(a)*r;
+            pos.setXYZ(i*SIDES+j,center.x+n.x*cs+b.x*sn,center.y+n.y*cs+b.y*sn,center.z+n.z*cs+b.z*sn);
+          }
+        };
+        for(let c=0;c<CAP;c++){const phi=Math.PI/2*(c/CAP);put(c,ringAt.copy(start).addScaledVector(u1,-rs*Math.cos(phi)),u1,rs*Math.sin(phi));}
+        for(let i=0;i<=RINGS;i++){
+          const s=i/RINGS*total;
+          if(s<=l1-rc){point.copy(start).addScaledVector(u1,s);tangent.copy(u1);}
+          else if(s>=l1+rc){point.copy(elbow).addScaledVector(u2,s-l1);tangent.copy(u2);}
+          else{
+            // Round the corner with a short arc so the elbow/knee is a smooth bend, not a kink.
+            const tau=(s-(l1-rc))/(2*rc),k=1-tau;
+            p1.copy(elbow).addScaledVector(u1,-rc);p2.copy(elbow).addScaledVector(u2,rc);
+            point.set(0,0,0).addScaledVector(p1,k*k).addScaledVector(elbow,2*k*tau).addScaledVector(p2,tau*tau);
+            tangent.set(0,0,0).addScaledVector(d1.copy(elbow).sub(p1),2*k).addScaledVector(d2.copy(p2).sub(elbow),2*tau).normalize();
+          }
+          const t=i/RINGS,base=t<te?rs+(rj-rs)*ss(t/te):rj+(rw-rj)*ss((t-te)/(1-te));
+          put(CAP+i,point,tangent,base*(1+bulge*Math.exp(-(((s-l1)/.08)**2))));
+        }
+        pos.needsUpdate=true;geo.computeVertexNormals();
+        const nrm=geo.attributes.normal;
+        for(let k=0;k<count;k++){
+          const x=pos.getX(k),y=pos.getY(k),z=pos.getZ(k);
+          // Only vertices near the torso can be near a join.
+          if(x<-.55||x>.55||y<.1||y>1.05||z<-.4||z>.45)continue;
+          const d=torsoProbe(x,y,z,probeNormal);if(d>=FAR)continue;
+          limbNormal.fromBufferAttribute(nrm,k).lerp(probeNormal,1-step(NEAR,FAR,d)).normalize();
+          nrm.setXYZ(k,limbNormal.x,limbNormal.y,limbNormal.z);
+        }
+        nrm.needsUpdate=true;
+      };
+    }
+    // Mitten hand (origin at the wrist, rounded fingers along +y, thumb toward +x) and a smooth rounded foot
+    // (origin at the ankle, toes along +z, sole flat at -0.065).
+    const mittenGeo=figure(deform(ball(DETAIL+1),(x,y,z)=>[x*.085*(1-.1*Math.max(0,y)),y*.09,z*.062*(1-.08*Math.max(0,y))]).translate(0,.06,0),()=>C.dark);
+    const thumbGeo=figure(deform(ball(DETAIL),(x,y,z)=>[x*.036,y*.06,z*.04]),()=>C.dark);
+    const footGeo=figure(deform(ball(DETAIL+2),(x,y,z)=>[x*(.10+.01*Math.max(0,z)),y<0?y*.045:y*.07,z*.135]).translate(0,-.02,.055),()=>C.dark);
+    function makeHand(){const g=new T.Group();body.add(g);part(g,mittenGeo);part(g,thumbGeo,.078,.05,.004).rotation.z=-.5;return g;}
+    function makeFoot(){const g=new T.Group();body.add(g);part(g,footGeo);return g;}
+
+    const paws=[],basis=new T.Matrix4();
+    const vec=(x,y,z)=>new T.Vector3(x,y,z);
+    const FOOT_SCALE=1.3,HAND_SCALE=1.2;
+    for(const side of [-1,1])for(const upper of [false,true]){
+      const root0=upper?vec(side*.315,.68,.02):vec(side*.25,.3,-.02);                    // shoulder / hip
+      const length=upper?.3:.22;                                                        // short chubby legs (upper arm = forearm, thigh = lower leg)
+      // Fat thigh tapering to a slim ankle, a visible knee; a thick upper arm tapering to a slim wrist.
+      const skin=upper?limbMesh(.11,.092,.065,.05):limbMesh(.165,.115,.075,.08);
+      const end=upper?makeHand():makeFoot();end.scale.setScalar(upper?HAND_SCALE:FOOT_SCALE);
+      // Standing with the weight on one leg: the right foot is a little forward, the left a little back and turned out.
+      // Hands hang relaxed, held slightly away from the body.
+      const rest=upper?vec(side*.43,.55,.11):vec(side*(side>0?.2:.22),GROUND+.065*FOOT_SCALE+.003,side>0?.08:-.03);
+      const restBend=upper?vec(side*.25,0,-.8):vec(0,0,1);                            // elbows back; knees forward
+      const climbBend=upper?vec(side*.5,-.8,-.3):vec(side*.5,0,.9);                      // elbows down and out; knees forward
+      const inner=vec(-side,0,0),forward=vec(0,0,1),restFingers=vec(side*.08,-1,.18).normalize(),forearm=vec(0,0,0),thumbSide=vec(0,0,0),palm=vec(0,0,0);
+      function pose(target,grip=0){
+        const reach=upper?length-.13*(1-grip):length;
+        const direction=target.clone().sub(root0),distance=Math.min(direction.length(),2*reach-.001);direction.normalize();
+        const endpoint=root0.clone().addScaledVector(direction,distance);
+        const bend=restBend.clone().lerp(climbBend,grip);bend.addScaledVector(direction,-bend.dot(direction)).normalize();
+        const elbow=root0.clone().addScaledVector(direction,distance*.5).addScaledVector(bend,Math.sqrt(Math.max(0,reach*reach-distance*distance*.25)));
+        if(upper){
+          forearm.copy(endpoint).sub(elbow).normalize();
+          skin(root0,elbow,endpoint.clone().addScaledVector(forearm,.04),bend);           // the skin ends inside the mitten
+          // Relaxed fingers point down beside the waist; gripping hands follow the forearm.
+          palm.copy(restFingers).lerp(forearm,grip).normalize();
+          // The thumb points forward on a relaxed hand and turns toward the body to wrap a rung.
+          thumbSide.copy(forward).multiplyScalar(1-grip).addScaledVector(inner,grip);thumbSide.addScaledVector(palm,-thumbSide.dot(palm)).normalize();
+          basis.makeBasis(thumbSide,palm,new T.Vector3().crossVectors(thumbSide,palm));
+          end.quaternion.setFromRotationMatrix(basis);
+        }else{
+          skin(root0,elbow,endpoint,bend);
+          end.rotation.set(grip*.4,side*.3*(1-grip),0);                                   // toes turn out when standing; ball of foot tips onto the rung climbing
+        }
+        end.position.copy(endpoint);
+      }
+      pose(rest);paws.push({side,upper,rest,pose,tip:end});
+    }
+
+    // One continuous radius profile avoids shoulders in the cream tip. Rings follow the curve
+    // so the tail keeps an even cross-section through the bend and narrows to a single point.
+    const tail=new T.Group();tail.position.set(.1,.2,-.19);tail.scale.setScalar(.92);body.add(tail);tail.rotation.z=-.85;
+    const curve=new T.CatmullRomCurve3([new T.Vector3(0,0,0),new T.Vector3(.05,.28,-.13),new T.Vector3(.03,.62,-.2),new T.Vector3(-.1,.98,-.12)]);
+    const tailRadius=t=>(1-t)*(.11+.8*t);
+    const rings=44,around=24,grid=[],frames=curve.computeFrenetFrames(rings,false);
+    for(let i=0;i<=rings;i++){
+      const t=i/rings,c=curve.getPoint(t),r=tailRadius(t);grid.push([]);
+      for(let j=0;j<around;j++){
+        const a=j/around*Math.PI*2,edge=t+.014*Math.sin(a*3+1.3)+.008*Math.sin(a*5+.4);
+        const point=c.clone().addScaledVector(frames.normals[i],Math.cos(a)*r).addScaledVector(frames.binormals[i],Math.sin(a)*r);
+        grid[i].push({p:point.toArray(),color:mix(C.orange,C.cream,step(.65,.70,edge)).getHex()});
+      }
+    }
+    const verts=[],cols=[];
+    const tri=(a,b,c)=>{for(const v of [a,b,c]){verts.push(...v.p);tint.setHex(v.color);cols.push(tint.r,tint.g,tint.b);}};
+    for(let i=0;i<rings;i++)for(let j=0;j<around;j++){
+      const a=grid[i][j],b=grid[i][(j+1)%around],c=grid[i+1][j],d=grid[i+1][(j+1)%around];
+      tri(a,b,c);tri(b,d,c);
+    }
+    const tailGeo=new T.BufferGeometry();tailGeo.setAttribute('position',new T.Float32BufferAttribute(verts,3));tailGeo.setAttribute('color',new T.Float32BufferAttribute(cols,3));tailGeo.computeVertexNormals();smoothNormals(tailGeo);
+    part(tail,tailGeo);
+
+    // Blend shading across the static joins: neck (head <-> torso), ear bases (-> head) and tail base (-> torso).
+    const headMatrix=placed(head);
+    weld(torsoGeo,torsoMatrix,headGeo,headMatrix);
+    const headProbe=makeProbe(headGeo,headMatrix);
+    for(const {ear,rim,face} of earParts){
+      const m=placed(ear,headMatrix);
+      blendNormals(rim,m,headProbe,'take');
+      const faceMatrix=m.clone().multiply(new T.Matrix4().makeTranslation(0,.03,.05));
+      blendNormals(face,faceMatrix,headProbe,'take');
+    }
+    blendNormals(tailGeo,placed(tail),torsoProbe,'take');
+
+    // A soft contact shadow under the idle fox (fades as it starts climbing). Browser only.
+    let setSit=()=>{};
+    if(typeof document!=='undefined'){
+      const blob=document.createElement('canvas');blob.width=blob.height=128;
+      const bctx=blob.getContext('2d'),grad=bctx.createRadialGradient(64,64,4,64,64,62);grad.addColorStop(0,'rgba(28,22,12,.55)');grad.addColorStop(1,'rgba(28,22,12,0)');
+      bctx.fillStyle=grad;bctx.fillRect(0,0,128,128);
+      const shadow=new T.Mesh(new T.PlaneGeometry(1.7,1.5).rotateX(-Math.PI/2),new T.MeshBasicMaterial({map:new T.CanvasTexture(blob),transparent:true,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2}));
+      shadow.renderOrder=-1;parent.add(shadow);
+      setSit=(sit,at)=>{shadow.visible=sit>.02;shadow.material.opacity=sit;shadow.position.set(at.x,at.y+GROUND+.012,at.z+.06);};
+    }
+    return {root,body,head,tail,paws,eyes,ears,setBlink,setSit,sitDrop:-IDLE_LIFT};
   }
   return {island,ladder,lantern,fox};
 }

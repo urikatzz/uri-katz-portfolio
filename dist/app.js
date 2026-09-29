@@ -38,3 +38,9 @@ document.querySelector('.close-viewer').addEventListener('click',()=>viewer.clos
 viewer.addEventListener('click',event=>{if(event.target===viewer){const r=viewer.getBoundingClientRect();if(event.clientX<r.left||event.clientX>r.right||event.clientY<r.top||event.clientY>r.bottom)viewer.close();}});
 viewer.addEventListener('close',()=>document.querySelector('#viewer-content').replaceChildren());
 document.querySelector('#year').textContent = new Date().getFullYear();
+
+// Reveal sections as they scroll into view; content stays visible without JS or with reduced motion.
+if('IntersectionObserver' in window && !matchMedia('(prefers-reduced-motion: reduce)').matches){
+ const io=new IntersectionObserver(entries=>entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}}),{rootMargin:'0px 0px -8% 0px',threshold:.06});
+ document.querySelectorAll('.company-project,.featured,.project,.section-heading,.about-intro,.career-item,.about-block').forEach(el=>{el.classList.add('reveal');io.observe(el);});
+}
