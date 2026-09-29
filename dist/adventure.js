@@ -151,9 +151,9 @@ try {
   const THREE = await import('./vendor/three.module.js');
   const { CSS3DRenderer, CSS3DObject } = await import('./vendor/CSS3DRenderer.js');
   startWorld(THREE, CSS3DRenderer, CSS3DObject);
-  $('scene-status').textContent = '';
 } catch (error) {
   console.error('The woodland could not start:', error);
+  document.body.classList.add('world-failed');
   $('scene-status').textContent = 'The 3D woodland is unavailable here. You can still explore every game with the arrows below.';
 }
 
@@ -173,7 +173,6 @@ function startWorld(T, CSS3DRenderer, CSS3DObject) {
   const environment = createEnvironment(document.querySelector('main'), reduced);
   const boardScene = new T.Scene();
   const boardRenderer = new CSS3DRenderer({element: $('island-cards')});
-  document.body.classList.add('world-ready');
   const boards = [];
   scene.fog = new T.Fog(0xeeeee3, 38, 85);
   scene.add(new T.HemisphereLight(0xdbeaf3, 0x52634c, 1.65));
@@ -275,6 +274,10 @@ function startWorld(T, CSS3DRenderer, CSS3DObject) {
       camera.layers.set(1);
       foxRenderer.render(scene,camera);
       camera.layers.set(0);
+      if(!document.body.classList.contains('world-ready')){
+        document.body.classList.add('world-ready');
+        $('scene-status').textContent='';
+      }
     }catch(error){console.error('frame skipped',error);}
     requestAnimationFrame(frame);
   }
