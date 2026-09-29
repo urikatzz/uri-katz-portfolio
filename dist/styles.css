@@ -98,6 +98,8 @@ body{background:radial-gradient(900px 520px at 88% -60px,rgba(246,162,75,.14),tr
 .header nav .contact-link{transition:background .2s,border-color .2s,transform .2s}
 .header nav .contact-link:hover{background:rgba(246,162,75,.12);border-color:var(--accent);transform:translateY(-1px)}
 .hero{padding-top:88px;padding-bottom:20px}
+.hero:has(.hero-personal){position:relative;isolation:isolate}
+.hero:has(.hero-personal)::before{content:"";position:absolute;z-index:-1;inset:35px -48px 0;border-radius:18px;background:radial-gradient(ellipse at 12% 8%,rgba(246,162,75,.18),transparent 54%),radial-gradient(ellipse at 88% 78%,rgba(89,118,188,.2),transparent 52%),linear-gradient(135deg,#191918 0%,#171a20 52%,#111312 100%)}
 .hero-row{align-items:flex-end;padding-bottom:52px}
 .hero h1{font-size:clamp(64px,11vw,168px);line-height:.95;letter-spacing:-.05em;margin-top:28px;background:linear-gradient(100deg,var(--text) 40%,var(--accent));-webkit-background-clip:text;background-clip:text;color:transparent}
 .hero-aside{max-width:340px;padding-bottom:12px}
