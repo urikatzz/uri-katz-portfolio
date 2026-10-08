@@ -111,7 +111,7 @@ body{background:radial-gradient(900px 520px at 88% -60px,rgba(246,162,75,.14),tr
 .hero .hero-personal .personal-heading{font-size:clamp(32px,4vw,48px);line-height:1.2;letter-spacing:-1px;margin:0 0 20px;background:none;color:var(--text)}
 .hero .hero-personal .personal-heading .name-accent{color:var(--accent)}
 .hero-personal{max-width:800px}
-.hero-personal p:not(.overline){font-size:15px;line-height:1.75}
+.hero-personal p:not(.overline){font-size:15px;line-height:1.75;color:#fff}
 .intro-line{opacity:0;transform:translateY(18px);animation:intro-arrive .7s cubic-bezier(.2,.7,.2,1) forwards}
 .intro-line:nth-child(1){animation-delay:.08s}
 .intro-line:nth-child(2){animation-delay:.22s}
